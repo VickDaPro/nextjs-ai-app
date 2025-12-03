@@ -9,23 +9,7 @@ export async function POST(req: Request) {
     const result = streamText({
       model: google("gemini-2.5-flash-lite"),
       // model: openai("gpt-4.1-nano"),
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a helpful assistant. Keep responses under 3 sentences and focus on practical examples.",
-        },
-        ...convertToModelMessages(messages),
-      ],
-    });
-
-    result.usage.then((usage) => {
-      console.log({
-        messageCount: messages.length,
-        inputTokens: usage.inputTokens,
-        outputTokens: usage.outputTokens,
-        totalTokens: usage.totalTokens,
-      });
+      messages: convertToModelMessages(messages),
     });
 
     return result.toUIMessageStreamResponse();
