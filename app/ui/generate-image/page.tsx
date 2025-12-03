@@ -78,10 +78,12 @@ export default function GenerateImagePage() {
           />
           <button
             type="submit"
-            disabled={isLoading || !prompt.trim()}
+            // disabled={isLoading || !prompt.trim()}
+            disabled
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Generate
+            {/* Generate */}
+            Temporarily Disabled
           </button>
         </div>
       </form>
