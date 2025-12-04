@@ -12,6 +12,21 @@ import { google } from "@ai-sdk/google";
 import { z } from "zod";
 
 const tools = {
+  getLocation: tool({
+    description: "Get the location of a user",
+    inputSchema: z.object({
+      name: z.string().describe("The name of the user"),
+    }),
+    execute: async ({ name }) => {
+      if (name === "Bruce Wayne") {
+        return "Gotham City";
+      } else if (name === "Clark Kent") {
+        return "Metropolis";
+      } else {
+        return "unknown";
+      }
+    },
+  }),
   getWeather: tool({
     description: "Get the weather for a location",
     inputSchema: z.object({
@@ -38,10 +53,10 @@ export async function POST(req: Request) {
 
     const result = streamText({
       model: google("gemini-2.5-flash"),
-      // model: openai("gpt-4.1-nano"),
+      //   model: openai("gpt-5-mini"),
       messages: convertToModelMessages(messages),
       tools,
-      stopWhen: stepCountIs(2),
+      stopWhen: stepCountIs(3),
     });
 
     return result.toUIMessageStreamResponse();

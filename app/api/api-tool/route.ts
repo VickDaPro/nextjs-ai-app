@@ -18,13 +18,37 @@ const tools = {
       city: z.string().describe("The city to get the weather for"),
     }),
     execute: async ({ city }) => {
-      if (city === "Gotham City") {
-        return "70°F and cloudy";
-      } else if (city === "Metropolis") {
-        return "80°F and sunny";
-      } else {
-        return "unknown";
+      const response = await fetch(
+        `http://api.weatherapi.com/v1/current.json?key=${process.env.WEATHER_API_KEY}&q=${city}`
+      );
+      const data = await response.json();
+      console.log("🚀 ~ data:", data);
+
+      if (!response.ok || data.error) {
+        throw new Error(
+          data.error?.message || `Failed to fetch weather for ${city}`
+        );
       }
+
+      if (!data.location || !data.current) {
+        throw new Error("Invalid response structure from weather API");
+      }
+
+      const weatherData = {
+        location: {
+          name: data.location.name,
+          country: data.location.country,
+          localtime: data.location.localtime,
+        },
+        current: {
+          temp_c: data.current.temp_c,
+          condition: {
+            text: data.current.condition.text,
+            code: data.current.condition.code,
+          },
+        },
+      };
+      return weatherData;
     },
   }),
 };
