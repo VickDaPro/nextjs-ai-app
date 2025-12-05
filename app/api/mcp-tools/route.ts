@@ -45,8 +45,7 @@ export async function POST(req: Request) {
       {
         requestInit: {
           headers: {
-            Authorization:
-              "Bearer mcp_m2m_vblGfra44d0nhNBeWY_mHnU6KXRyOKOBo3y8hB4aKTM_0cbed053b29e55c9",
+            Authorization: `Bearer ${process.env.MOCKMCP_TOKEN}`,
           },
         },
       }
