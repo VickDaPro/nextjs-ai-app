@@ -2,22 +2,76 @@
 
 import { useState, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import Image from "next/image";
+import {
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithToolCalls,
+} from "ai";
+import { Image } from "@imagekit/next";
 
 import type { ChatMessage } from "@/app/api/client-side-tools/route";
 
-export default function GenerateImageToolPage() {
+function buildTransformatoinUrl(
+  baseUrl: string,
+  transformation: string
+): string {
+  const separator = baseUrl.includes("?") ? "&" : "?";
+  return `${baseUrl}${separator}tr=${transformation}`;
+}
+
+export default function ClientSideToolsPage() {
   const [input, setInput] = useState("");
   const [files, setFiles] = useState<FileList | undefined>(undefined);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { messages, sendMessage, status, error, stop } = useChat<ChatMessage>({
-    transport: new DefaultChatTransport({
-      api: "/api/generate-image-tool",
-    }),
-  });
+  const { messages, sendMessage, status, error, stop, addToolOutput } =
+    useChat<ChatMessage>({
+      transport: new DefaultChatTransport({
+        api: "/api/client-side-tools",
+      }),
+      sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+      async onToolCall({ toolCall }) {
+        if (toolCall.dynamic) {
+          return;
+        }
+        switch (toolCall.toolName) {
+          case "changeBackground":
+            {
+              const { imageUrl, backgroundPrompt } = toolCall.input;
+
+              const transformation = `e-changebg-prompt-${backgroundPrompt}`;
+              const transformedUrl = buildTransformatoinUrl(
+                imageUrl,
+                transformation
+              );
+
+              addToolOutput({
+                tool: "changeBackground",
+                toolCallId: toolCall.toolCallId,
+                output: transformedUrl,
+              });
+            }
+            break;
+          case "removeBackground":
+            {
+              const { imageUrl } = toolCall.input;
+
+              const transformation = `e-bgremove`;
+              const transformedUrl = buildTransformatoinUrl(
+                imageUrl,
+                transformation
+              );
+
+              addToolOutput({
+                tool: "removeBackground",
+                toolCallId: toolCall.toolCallId,
+                output: transformedUrl,
+              });
+            }
+            break;
+        }
+      },
+    });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -110,7 +164,134 @@ export default function GenerateImageToolPage() {
                       >
                         <div>
                           <Image
-                            src={`data:image/png;base64,${part.output}`}
+                            urlEndpoint={
+                              process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT
+                            }
+                            src={part.output}
+                            alt="Generated image"
+                            width={500}
+                            height={500}
+                          />
+                        </div>
+                      </div>
+                    );
+
+                  case "output-error":
+                    return (
+                      <div
+                        key={`${message.id}-getWeather-${index}`}
+                        className="bg-zinc-800/50 border border-zinc-700 p-2 rounded mt-1 mb-2"
+                      >
+                        <div className="text-sm text-red-400">
+                          Error: {part.errorText}
+                        </div>
+                      </div>
+                    );
+
+                  default:
+                    return null;
+                }
+              case "tool-changeBackground":
+                switch (part.state) {
+                  case "input-streaming":
+                    return (
+                      <div
+                        key={`${message.id}-getWeather-${index}`}
+                        className="bg-zinc-800/50 border border-zinc-700 p-2 rounded mt-1 mb-2"
+                      >
+                        <div className="text-sm text-zinc-500">
+                          Receiving image transformation request...
+                        </div>
+                        <pre className="text-xs text-zinc-600 mt-1">
+                          {JSON.stringify(part.input, null, 2)}
+                        </pre>
+                      </div>
+                    );
+
+                  case "input-available":
+                    return (
+                      <div
+                        key={`${message.id}-getWeather-${index}`}
+                        className="bg-zinc-800/50 border border-zinc-700 p-2 rounded mt-1 mb-2"
+                      >
+                        <div className="text-sm text-zinc-400">
+                          Changing background to: {part.input.backgroundPrompt}
+                        </div>
+                      </div>
+                    );
+
+                  case "output-available":
+                    return (
+                      <div
+                        key={`${message.id}-getWeather-${index}`}
+                        className="bg-zinc-800/50 border border-zinc-700 p-2 rounded mt-1 mb-2"
+                      >
+                        <div>
+                          <Image
+                            urlEndpoint={"https://ik.imagekit.io/VickPro/"}
+                            src={part.output}
+                            alt="Generated image"
+                            width={500}
+                            height={500}
+                          />
+                        </div>
+                      </div>
+                    );
+
+                  case "output-error":
+                    return (
+                      <div
+                        key={`${message.id}-getWeather-${index}`}
+                        className="bg-zinc-800/50 border border-zinc-700 p-2 rounded mt-1 mb-2"
+                      >
+                        <div className="text-sm text-red-400">
+                          Error: {part.errorText}
+                        </div>
+                      </div>
+                    );
+
+                  default:
+                    return null;
+                }
+              case "tool-removeBackground":
+                switch (part.state) {
+                  case "input-streaming":
+                    return (
+                      <div
+                        key={`${message.id}-getWeather-${index}`}
+                        className="bg-zinc-800/50 border border-zinc-700 p-2 rounded mt-1 mb-2"
+                      >
+                        <div className="text-sm text-zinc-500">
+                          Receiving image transformation request...
+                        </div>
+                        <pre className="text-xs text-zinc-600 mt-1">
+                          {JSON.stringify(part.input, null, 2)}
+                        </pre>
+                      </div>
+                    );
+
+                  case "input-available":
+                    return (
+                      <div
+                        key={`${message.id}-getWeather-${index}`}
+                        className="bg-zinc-800/50 border border-zinc-700 p-2 rounded mt-1 mb-2"
+                      >
+                        <div className="text-sm text-zinc-400">
+                          Removing background...
+                        </div>
+                      </div>
+                    );
+
+                  case "output-available":
+                    return (
+                      <div
+                        key={`${message.id}-getWeather-${index}`}
+                        className="bg-zinc-800/50 border border-zinc-700 p-2 rounded mt-1 mb-2"
+                      >
+                        <div>
+                          <Image
+                            urlEndpoint={"https://ik.imagekit.io/VickPro/"}
+                            src={part.output}
                             alt="Generated image"
                             width={500}
                             height={500}

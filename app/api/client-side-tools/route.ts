@@ -11,6 +11,22 @@ import {
 import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
+import ImageKit from "imagekit";
+
+const uploadImage = async (image: string) => {
+  const imagekit = new ImageKit({
+    urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT as string,
+    publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY as string,
+    privateKey: process.env.IMAGEKIT_PRIVATE_KEY as string,
+  });
+
+  const response = await imagekit.upload({
+    file: image,
+    fileName: "generated_image.jpg",
+  });
+
+  return response.url;
+};
 
 const tools = {
   generateImage: tool({
@@ -30,7 +46,9 @@ const tools = {
           },
         },
       });
-      return image.base64;
+      const imageUrl = await uploadImage(image.base64);
+
+      return imageUrl;
     },
     toModelOutput: () => {
       return {
@@ -43,6 +61,26 @@ const tools = {
         ],
       };
     },
+  }),
+  changeBackground: tool({
+    description:
+      "Replace image background with AI-generated scenes based on text prompt",
+    inputSchema: z.object({
+      imageUrl: z.string().describe("URL of the uploaded image"),
+      backgroundPrompt: z
+        .string()
+        .describe(
+          'Description of the new background (e.g., "tropical beach sunset", "modern office", "mountain landscape")'
+        ),
+    }),
+    outputSchema: z.string().describe("The transformed image URL"),
+  }),
+  removeBackground: tool({
+    description: "Remove the background of an image",
+    inputSchema: z.object({
+      imageUrl: z.string().describe("URL of the uploaded image"),
+    }),
+    outputSchema: z.string().describe("The transformed image URL"),
   }),
 };
 
@@ -58,7 +96,7 @@ export async function POST(req: Request) {
       // model: openai("gpt-4.1-nano"),
       messages: convertToModelMessages(messages),
       tools,
-      stopWhen: stepCountIs(2),
+      stopWhen: stepCountIs(3),
     });
 
     return result.toUIMessageStreamResponse();
