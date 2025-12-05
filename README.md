@@ -3,6 +3,7 @@
 This repo is a minimal Next.js app that walks through the core primitives of the Vercel AI SDK v5—text generation, streaming, and chat—using both server routes and React hooks. It is wired to Google Gemini by default, with OpenAI ready to swap in.
 
 ## Requirements
+
 - Node.js 18+ (Next.js 16)
 - npm (uses `package-lock.json`)
 - API key for one or more providers:
@@ -10,14 +11,18 @@ This repo is a minimal Next.js app that walks through the core primitives of the
   - `OPENAI_API_KEY` for `@ai-sdk/openai` (optional swap)
 
 ## Setup
-1) Install deps: `npm install`  
-2) Create `.env.local` with your key(s):
+
+1. Install deps: `npm install`
+2. Create `.env.local` with your key(s):
+
 ```
 GOOGLE_GENERATIVE_AI_API_KEY=your-key
 # OPENAI_API_KEY=your-key
 ```
-3) Run the dev server: `npm run dev` then open http://localhost:3000  
-```markdown
+
+3. Run the dev server: `npm run dev` then open http://localhost:3000
+
+````markdown
 # Next.js AI Playground (Vercel AI SDK v5)
 
 This repository demonstrates a set of Next.js App Router examples and UI demos built on top of the Vercel AI SDK v5. It includes server route handlers (API) and client pages that showcase text generation, streaming, chat, embeddings, image generation, speech, structured data, and a number of utility tooling examples.
@@ -25,16 +30,19 @@ This repository demonstrates a set of Next.js App Router examples and UI demos b
 **Quick note:** the project is wired to a provider by default (Google Gemini in examples) but is provider-agnostic — you can swap in OpenAI or other supported providers by changing the provider import and model id in the route handlers.
 
 **Requirements**
+
 - Node.js 18+ (recommended)
 - npm (this repo uses `package-lock.json`)
 - Provider API key(s) in `.env.local` (see the env section below)
 
 **Setup**
+
 1. Install dependencies:
 
 ```bash
 npm install
 ```
+````
 
 2. Create `.env.local` with the provider keys you want to use. Example:
 
@@ -53,6 +61,7 @@ npm run dev
 **Project structure & available demos**
 
 - **API route handlers** (server-side):
+
   - `app/api/completion/route.ts` — non-streaming text generation
   - `app/api/stream/route.ts` — streaming text responses
   - `app/api/chat/route.ts` — multi-turn chat stream helpers
@@ -84,6 +93,7 @@ npm run dev
 Explore `/app/ui` in the browser to see each demo in action.
 
 **Key concepts demonstrated**
+
 - Providers: swap provider imports (e.g. `@ai-sdk/google`, `@ai-sdk/openai`) and model ids in route handlers to change backends.
 - Text generation vs streaming: examples show `generateText` (single response) and `streamText` (incremental tokens / SSE).
 - Chat: client-side `UIMessage` objects are converted to provider messages via `convertToModelMessages` and streamed back to the UI with `toUIMessageStreamResponse()` where appropriate.
@@ -91,24 +101,31 @@ Explore `/app/ui` in the browser to see each demo in action.
 - Structured data: schema-driven outputs and typed responses are demonstrated in the structured pages.
 
 **Environment variables**
+
 - `GOOGLE_GENERATIVE_AI_API_KEY` — for Google provider examples.
 - `OPENAI_API_KEY` — for OpenAI examples (if used).
-Add any other provider-specific keys required by the routes you enable.
+  Add any other provider-specific keys required by the routes you enable.
 
 **Scripts**
+
 - `npm run dev` — start Next.js in development mode
 - `npm run build` — production build
 - `npm start` — run the built app
 - `npm run lint` — run ESLint
 
 **Switching providers / models**
+
 - Edit the provider import and `model(...)` line in the specific `app/api/*/route.ts` file you want to change, add the required env var to `.env.local`, then restart the dev server.
 
 **Deployment notes**
+
 - Configure environment variables in your hosting platform (Vercel, Netlify, etc.).
 - This app uses Next.js App Router route handlers; no custom server is required.
 
 **Further reading**
+
 - Vercel AI SDK v5 docs: https://sdk.vercel.ai/docs
 
-``` 
+```
+
+```
